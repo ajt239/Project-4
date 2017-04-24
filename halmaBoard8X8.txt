@@ -1,0 +1,8 @@
+e e e e p2 p2 p2 p2
+e e e e e p2 p2 p2
+e e e e e e p2 p2
+e e e e e e e p2
+p1 e e e e e e e
+p1 p1 e e e e e e
+p1 p1 p1 e e e e e
+p1 p1 p1 p1 e e e e
