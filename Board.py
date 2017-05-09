@@ -55,6 +55,9 @@ class Board():
     def updateBoard(self, board):
         self.board = board
 
+    def getBoard(self):
+        return self.board
+
     def changeGameState(self):
         # change gameState after moving the board piece
         self.gameState = (self.gameState+1)%2
