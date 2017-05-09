@@ -8,14 +8,16 @@ test_board = [[0, 2, 2],
               [1, 1, 0]]
 
 #              0  1  2  3  4  5  6  7
-init_board = [[0, 0, 0, 0, 2, 2, 2, 2],  # 0
+init_board = [[0, 0, 0, 0, 2, 0, 2, 2],  # 0
               [0, 0, 0, 0, 0, 2, 0, 2],  # 1
-              [0, 0, 0, 0, 0, 1, 2, 2],  # 2
-              [0, 0, 0, 0, 0, 0, 0, 2],  # 3
+              [0, 0, 0, 0, 0, 1, 0, 2],  # 2
+              [0, 0, 0, 0, 0, 0, 0, 0],  # 3
               [1, 0, 0, 1, 0, 0, 0, 0],  # 4
               [0, 1, 0, 0, 0, 0, 0, 0],  # 5
               [1, 1, 0, 0, 0, 0, 0, 0],  # 6
               [1, 1, 1, 0, 0, 0, 0, 0]]  # 7
+
+movesMade = []
 
 infinity = 999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
 negativeInfinity = -999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
@@ -58,6 +60,7 @@ def minimax_decision(state):
             best_move = move
 
 
+    movesMade.append(best_move)
     return v, best_move
 
 
@@ -270,7 +273,7 @@ def evaluate(board):
     :return: 
     """
 
-    value = 0                                                           # initialize state's value
+    value = negativeInfinity                                                          # initialize state's value
     # distances = []                                                      # array of each pawn's distance to goal
 
     # # Find the overall distance to the goal = average of all the pieces distances to goal
@@ -288,19 +291,19 @@ def evaluate(board):
     # # avg_dist = statistics.median(distances)
     # # avg_dist = statistics.mode(distances)
     # avg_dist = statistics.mean(distances)
-    value = 0
-    goodPawns = pawns_in_goal(board)
-    badPawns = pawns_in_base(board)
-    #mildPawns = pawns_in_middle(board)
-    if rows == 8:
-        mildPawns = 10-(goodPawns+badPawns)
-        value = (goodPawns + mildPawns/2 - badPawns)/10
-    elif rows == 10:
-        mildPawns = 15-(goodPawns+badPawns)
-        value = (goodPawns + mildPawns/2 - badPawns)/15
-    else:
-        mildPawns = 21-(goodPawns+badPawns)
-        value = (goodPawns + mildPawns/2 - badPawns)/21
+    if board not in movesMade:
+        goodPawns = pawns_in_goal(board)
+        badPawns = pawns_in_base(board)
+        mildPawns = pawns_in_middle(board)
+        if rows == 8:
+            #mildPawns = 10-(goodPawns+badPawns)
+            value = (goodPawns + mildPawns - badPawns)/10
+        elif rows == 10:
+            #mildPawns = 15-(goodPawns+badPawns)
+            value = (goodPawns + mildPawns - badPawns)/15
+        else:
+            #mildPawns = 21-(goodPawns+badPawns)
+            value = (goodPawns + mildPawns - badPawns)/21
 
     return value
 
@@ -352,30 +355,64 @@ def pawns_in_goal(board):
 def pawns_in_base(board):
     weight = 0
     if rows == 8:
-        #add 10 players to each side
+        #check 10 players to each side
         for x in range(0,4):
             for y in range(4+x,8):
                 if board[y][x] == 1:
                     weight += 1
     elif rows == 10:
-        #add 15 players to each side
+        #check 15 players to each side
         for x in range(0,5):
             for y in range(5+x,10):
                 if board[y][x] == 1:
-                    weight -= 1
+                    weight += 1
     else:
-        # add 21 players to each side
+        # check 21 players to each side
         for x in range(0,6):
             for y in range(10+x,16):
                 if board[y][x] == 1:
-                    weight -= 1
+                    weight += 1
     return weight
 
 def pawns_in_middle(board):
+    # Made for 8 by 8 only and checks only for player 1
     value = 0
+
+    # for x in range(3,rows-3):
+    #     if board[x][x-3] == 1:
+    #         value += 1/8
+    #     else board[x-3][x] == 1:
+    #         value +=7/8
+
+
+
+    if board[1][4] == 1 or board[6][3] == 1:
+        value += 2/4
+
+    if board[4][1] == 1 or board[3][6] == 1:
+        value += 3/4
+
     for x in range(2,rows-2):
         for y in range(2,columns-2):
-            pass
+            if board[x][y] == 1 and y >= x:
+                value += 3/4
+            elif board[x][y] == 1:
+                value += 2/4
+
+    for x in range(2,4):
+        for y in range(2):
+            if board[x][y] == 1 or board[y][x] == 1 or board[x+4][y+4] == 1 or board[y+4][x+4] == 1:
+                value += 1/4
+
+    for x in range(2):
+        for y in range(2):
+            if board[x][y] == 1 or board[x+6][y+6] == 1:
+                value += 1/20
+
+    return value
+
+
+            
 
 
 
