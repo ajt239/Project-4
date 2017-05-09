@@ -3,19 +3,23 @@ from time import time
 import statistics
 import math
 
+infinity = math.inf
+
 test_board = [[0, 2, 2],
               [1, 0, 2],
               [1, 1, 0]]
 
 #              0  1  2  3  4  5  6  7
 init_board = [[0, 0, 0, 0, 2, 2, 2, 2],  # 0
-              [0, 0, 0, 0, 0, 2, 0, 2],  # 1
-              [0, 0, 0, 0, 0, 1, 2, 2],  # 2
+              [0, 0, 0, 0, 0, 2, 2, 2],  # 1
+              [0, 0, 0, 0, 0, 0, 2, 2],  # 2
               [0, 0, 0, 0, 0, 0, 0, 2],  # 3
-              [1, 0, 0, 1, 0, 0, 0, 0],  # 4
-              [0, 1, 0, 0, 0, 0, 0, 0],  # 5
-              [1, 1, 0, 0, 0, 0, 0, 0],  # 6
-              [1, 1, 1, 0, 0, 0, 0, 0]]  # 7
+              [1, 0, 0, 0, 0, 0, 0, 0],  # 4
+              [1, 1, 0, 0, 0, 0, 0, 0],  # 5
+              [1, 1, 1, 0, 0, 0, 0, 0],  # 6
+              [1, 1, 1, 1, 0, 0, 0, 0]]  # 7
+
+pawns = {(0,7), (0,6), (0,5), (0,4), (1,7), (1,6), (1,5), (2,7), (2,6), (3,7)}
 
 
 def get_board_set(board):
@@ -47,7 +51,7 @@ def minimax_decision(state):
 
     #
     for move in moves:
-        val = min_value(move, depth + 1)
+        val = min_value(move, depth + 1, -infinity, infinity)
 
         if val > v:
             v = val
@@ -56,7 +60,7 @@ def minimax_decision(state):
     return v, best_move
 
 
-def max_value(state, depth):
+def max_value(state, depth, alpha, beta):
     """
     
     :param state: The given state of the game (a board, 2D array)
@@ -92,13 +96,18 @@ def max_value(state, depth):
     # Get the optimal move for player 1
     # ------------------------------------------------------------------------------------------------------------------
     for move in moves:
-        v = max(v, min_value(move, depth+1))
+        val = min_value(move, depth+1, alpha, beta)
+        v = max(v, val)
+
+        if v >= beta:
+            return v
+        alpha = max(alpha, v)
     # ------------------------------------------------------------------------------------------------------------------
 
     return v
 
 
-def min_value(state, depth):
+def min_value(state, depth, alpha, beta):
     """
     
     :param state: 
@@ -133,7 +142,11 @@ def min_value(state, depth):
     # Get the optimal move for player 2
     # ------------------------------------------------------------------------------------------------------------------
     for move in moves:
-        v = min(v, max_value(move, depth+1))
+        v = min(v, max_value(move, depth+1, alpha, beta))
+
+        if v <= alpha:
+            return v
+        beta = min(beta, v)
     # ------------------------------------------------------------------------------------------------------------------
 
     return v
@@ -251,7 +264,7 @@ def cuttoff_test(state, depth):
     :param depth: 
     :return: 
     """
-    if depth == 2 or terminal_test(state)[0]:
+    if depth == 4 or terminal_test(state)[0]:
         return True
     else:
         return False
@@ -322,11 +335,13 @@ def move_generator(board, player):
     """
     moves = []
 
-    for y in range(rows):
-        for x in range(columns):
-            if board[y][x] == player:  # position holds a player 1 pawn
-                # generate all moves for that pawn and add them to the list of moves
-                moves += gen_pawn_moves(x, y, board, player)
+    for pawn in pawns:
+        x, y = pawn
+        moves += gen_jump_moves(x,y, board, player)
+
+    for pawn in pawns:
+        x, y = pawn
+        moves += gen_single_moves(x,y, board, player)
 
     return moves
 
@@ -373,7 +388,7 @@ def gen_single_moves(x, y, board, player):
     return moves
 
 
-def gen_jump_moves(x, y, player, board, path=set()):
+def gen_jump_moves(x, y, board, player, path=set()):
     """
     Generate all jump-moves a pawn could take, without making duplicate moves - where the pawn can make the same move,
     but by jumping a different path.
@@ -450,7 +465,7 @@ def gen_jump_moves(x, y, player, board, path=set()):
                 # ======================================================================================================
 
                 # Look for another jump!
-                moves += gen_jump_moves(new_x, new_y, player, new_board, path)
+                moves += gen_jump_moves(new_x, new_y, new_board, player, path)
 
     return moves
 
@@ -516,13 +531,23 @@ def display_board(board):
         print()
 
 
+def update_pawn_positions(board):
+    pawns = set()
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            if board[j][i] == 1:
+                pawns.add((i,j))
+    return pawns
+
 def __main__():
     best_move = init_board
-    for i in range(5):
+    for i in range(10):
         start = time()
         v, best_move = minimax_decision(best_move)
         print(v)
         display_board(best_move)
+        pawns = update_pawn_positions(best_move)
+        print(pawns)
         end = time()
         t = end-start
         print(t)
