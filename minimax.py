@@ -292,8 +292,9 @@ def evaluate(board):
     # # avg_dist = statistics.mode(distances)
     # avg_dist = statistics.mean(distances)
     if board not in movesMade:
-        goodPawns = pawns_in_goal(board)
-        badPawns = pawns_in_base(board)
+        pawns = get_pawns_set(board)
+        goodPawns = pawns_in_goal(pawns)
+        badPawns = pawns_in_base(pawns)
         mildPawns = pawns_in_middle(board)
         if rows == 8:
             #mildPawns = 10-(goodPawns+badPawns)
@@ -328,53 +329,54 @@ def get_distance(x, y):
 
     return distance
 
-def pawns_in_goal(board):
-    pawns = 0
-    if rows == 8:
-        #add 10 players to each side
-        for x in range(0,4):
-            for y in range(4+x,8):
-                if board[x][y] == 1:
-                    pawns += 1
-    elif rows == 10:
-        #add 15 players to each side
-        for x in range(0,5):
-            for y in range(5+x,10):
-                if board[x][y] == 1:
-                    pawns += 1
-    else:
-        # add 21 players to each side
-        for x in range(0,6):
-            for y in range(10+x,16):
-                if board[x][y] == 1:
-                    pawns += 1
-    return pawns
+def pawns_in_goal(pawns):
+    pawnsInGoal = 0
+    for pawn in pawns:
+        x = pawn[0]
+        y = pawn[1]
+        if rows == 8:
+            #add 10 players to each side
+            if x in range(0,4):
+                if y in range(4+x,8):
+                    pawnsInGoal += 1
+        elif rows == 10:
+            #add 15 players to each side
+            if x in range(0,5):
+                if y in range(5+x,10):
+                    pawnsInGoal += 1
+        else:
+            # add 21 players to each side
+            for x in range(0,6):
+                for y in range(10+x,16):
+                    pawnsInGoal += 1
+    return pawnsInGoal
 
 
 
-def pawns_in_base(board):
+def pawns_in_base(pawns):
     weight = 0
-    if rows == 8:
-        #check 10 players to each side
-        for x in range(0,4):
-            for y in range(4+x,8):
-                if board[y][x] == 1:
+    for pawn in pawns:
+        x = pawn[1]
+        y = pawn[0]
+        if rows == 8:
+            #check 10 players to each side
+            if x in range(0,4):
+                if y in range(4+x,8):
                     weight += 1
-    elif rows == 10:
-        #check 15 players to each side
-        for x in range(0,5):
-            for y in range(5+x,10):
-                if board[y][x] == 1:
+        elif rows == 10:
+            #check 15 players to each side
+            if x in range(0,5):
+                if y in range(5+x,10):
                     weight += 1
-    else:
-        # check 21 players to each side
-        for x in range(0,6):
-            for y in range(10+x,16):
-                if board[y][x] == 1:
+        else:
+            # check 21 players to each side
+            if x in range(0,6):
+                if y in range(10+x,16):
                     weight += 1
+        
     return weight
 
-def pawns_in_middle(board):
+def pawns_in_middle(pawns):
     # Made for 8 by 8 only and checks only for player 1
     value = 0
 
@@ -385,29 +387,38 @@ def pawns_in_middle(board):
     #         value +=7/8
 
 
+    for pawn in pawns:
+        x = pawn[0]
+        y = pawn[1]
+        if pawn == (1,4) or pawn == (6,3):
+            value += 2/4
 
-    if board[1][4] == 1 or board[6][3] == 1:
-        value += 2/4
+        elif pawn == (4,1) or pawn == (3,6):
+            value += 3/4
 
-    if board[4][1] == 1 or board[3][6] == 1:
-        value += 3/4
-
-    for x in range(2,rows-2):
-        for y in range(2,columns-2):
-            if board[x][y] == 1 and y >= x:
-                value += 3/4
-            elif board[x][y] == 1:
-                value += 2/4
-
-    for x in range(2,4):
-        for y in range(2):
-            if board[x][y] == 1 or board[y][x] == 1 or board[x+4][y+4] == 1 or board[y+4][x+4] == 1:
+        elif x in range(2):
+            if y in range(2):
+                value += 1/20
+            elif y in range(4):
                 value += 1/4
 
-    for x in range(2):
-        for y in range(2):
-            if board[x][y] == 1 or board[x+6][y+6] == 1:
+        elif x in range(2,rows-2):
+            if y in range(2) and x<4:
+                value += 1/4
+            elif y in range(2,columns-2):
+                if y >= x:
+                    value += 3/4
+                else:
+                    value += 2/4
+            else:
+                value += 1/4
+
+        elif x in range(rows-2,rows):
+            if y in range(rows-2,rows):
                 value += 1/20
+            elif y in range(4,6):
+                value +=1/4
+
 
     return value
 
@@ -612,6 +623,14 @@ def prune(tiles):
 
     return tiles
 # END MOVE GENERATOR ===================================================================================================
+
+def get_pawns_set(board):
+    board_set = set([])
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            if board[i][j] == 1:
+                board_set.add((i,j))
+    return board_set
 
 
 def display_board(board):
