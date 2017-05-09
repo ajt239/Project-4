@@ -640,22 +640,16 @@ def display_board(board):
         print()
 
 
-def __main__():
-    print("STARTING BOARD")
-    display_board(init_board)
-    print("-------------------\n\n")
-    best_move = init_board
-    for i in range(7):
-        start = time()
-        v, best_move = minimax_decision(best_move)
-        print("-------------------\nBOARD {}".format(i))
-        print("Heuristic value: ",v)
-        display_board(best_move)
-        end = time()
-        t = end-start
-        print("Time taken: ", t)
-        print("-------------------\n\n")
+def take_turn(board):
+    start = time()
+    v, best_move = minimax_decision(board)
+    #print("-------------------\nBOARD {}".format(i))
+    #print("Heuristic value: ",v)
+    #display_board(best_move)
+    end = time()
+    t = end-start
+    return v, best_move, t
 
-
-if __name__ == '__main__':
-    __main__()
+v, best_move, t = take_turn(init_board)
+print("Chose in time {} with value {}".format(t,v))
+display_board(best_move)

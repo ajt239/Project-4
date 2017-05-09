@@ -1,6 +1,7 @@
 from tkinter import *
 from Board import Board
-from AI import *
+from Agent_Board import Agent_Board
+from Agent import Agent
 import time
 
 class BoardGUI(Frame):
@@ -21,6 +22,8 @@ class BoardGUI(Frame):
             # that was original inputted for the length if not then quit
             if self.boardIndex != boardLength:
                 quit()
+
+        self.agent = Agent()
 
         # create the frame for the GUI and set it on a grid
         Frame.__init__(self,master)
@@ -127,11 +130,19 @@ class BoardGUI(Frame):
                     else:
                         self.board.changeGameState()
                         self.lbl["text"] = "{:04.2f}: Player {} moved from {}{} to {}{}.\n\
-                        Player {}, enter a move.".format((time.time()-self.startTime)/60,\
+                        Player {} is THINKING...".format((time.time()-self.startTime)/60,\
                                                        -self.board.getGameState()+2,\
                                                        self.alphabet[coords[0][1]],coords[0][0],\
                                                        self.alphabet[coords[1][1]],coords[1][0],\
                                                        self.board.getGameState()+1)
+                        #Call the agent here
+                        agent_board = Agent_Board(self.board.getBoard(),0,1)
+                        v, new_board = self.agent.minimax_decision(agent_board)
+                        self.board.updateBoard(new_board)
+                        self._unHighlightButton()
+                        self._updateButtons()
+                        self.board.changeGameState()
+                        self.lbl["text"] = "Agent moved! Player 1 it is your turn."
                         return  # leave the function
 
             # valid but impossible move entered; so let the user know
@@ -156,6 +167,17 @@ class BoardGUI(Frame):
 
         # highlight the pressed button
         self.boardButtons[x][y]["bg"] = "yellow"
+
+    def _updateButtons(self):
+        for x in range(self.board.getSize()):
+            for y in range(self.board.getSize()):
+                text = self.board.getPosition(x,y)
+                if text == 0:
+                    self.boardButtons[x][y]["text"] = "p1"
+                elif text == 1:
+                    self.boardButtons[x][y]["text"] = "p2"
+                else:
+                    self.boardButtons[x][y]["text"] = "     "
     
 
     # just updates the button color based off of self.board

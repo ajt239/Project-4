@@ -1,3 +1,4 @@
+
 class Board():
 
     def __init__(self, boardLength, boardFile=None):
@@ -50,6 +51,9 @@ class Board():
             return self.possibleMoves
         else:
             return self.possibleMoves[self.gameState]
+
+    def updateBoard(self, board):
+        self.board = board
 
     def changeGameState(self):
         # change gameState after moving the board piece
