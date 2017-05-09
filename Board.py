@@ -8,7 +8,7 @@ class Board():
         if boardFile != None:
             # for all of the lines in the file add it to self.board
             for line in boardFile:
-                self.board.append(line.strip().split(" "))
+                self.board.append(int(line.strip().split(" ")))
                 self.boardIndex += 1
 
             boardFile.close() # close the file
@@ -20,7 +20,7 @@ class Board():
             for x in range(self.boardIndex):
                 self.board.append([])
                 for y in range(self.boardIndex):
-                    self.board[x].append("e")
+                    self.board[x].append(0)
             # then add the players to the board
             self._addPlayers()
 
@@ -65,20 +65,20 @@ class Board():
             #add 10 players to each side
             for j in range(0,4):
                 for i in range(4+j,8):
-                    self.board[j][i] = "p2"
-                    self.board[i][j] = "p1"
+                    self.board[j][i] = 2
+                    self.board[i][j] = 1
         elif self.boardIndex == 10:
             #add 15 players to each side
             for j in range(0,5):
                 for i in range(5+j,10):
-                    self.board[j][i] = "p2"
-                    self.board[i][j] = "p1"
+                    self.board[j][i] = 2
+                    self.board[i][j] = 1
         else:
             # add 21 players to each side
             for j in range(0,6):
                 for i in range(10+j,16):
-                    self.board[j][i] = "p2"
-                    self.board[i][j] = "p1"
+                    self.board[j][i] = 2
+                    self.board[i][j] = 1
 
 
     # generates all possible moves for a player based on self.gamestate
@@ -88,9 +88,9 @@ class Board():
         # loop through the whole board and add every pawn's location as a key to the moves dictionary with its value as an empty list for possible moves
         for i in range(self.boardIndex):
             for j in range(self.boardIndex):
-                if self.gameState == 0 and self.board[i][j] == "p1":
+                if self.gameState == 0 and self.board[i][j] == 1:
                     moves[(i,j)] = []
-                elif self.gameState == 1 and self.board[i][j] == "p2":
+                elif self.gameState == 1 and self.board[i][j] == 2:
                     moves[(i,j)] = []
         # for all the pawns added above, add to their lists of possible moves all of the moves they can make by moving once or by jumping
         for key in moves:
@@ -109,7 +109,7 @@ class Board():
                 # check that the new  x,y spot is not the same as the key, is on the board, and is empty
                 if (possible_x_move,possible_y_move) != key \
                 and possible_x_move in range(self.boardIndex) and possible_y_move in range(self.boardIndex) \
-                and self.board[possible_x_move][possible_y_move] == "e":
+                and self.board[possible_x_move][possible_y_move] == 0:
                     path.append((possible_x_move,possible_y_move))  # if so, it is possible to move there
 
        
@@ -129,7 +129,7 @@ class Board():
                 # that it is within the board boundaries, and that it is not already occupied
                 if (x_spotReached, y_spotReached) not in path and (x_spotReached, y_spotReached) != key\
                 and x_spotReached in range(self.boardIndex) and y_spotReached in range(self.boardIndex) \
-                and self.board[x_spotReached][y_spotReached] == "e":
+                and self.board[x_spotReached][y_spotReached] == 0:
                     path.append((x_spotReached,y_spotReached))      # add the spot to the path
                     self._addJumpMoves((x_spotReached,y_spotReached),path,self._possibleJumpSpots((x_spotReached,y_spotReached)))   # check if there are any jumps you can make from there
 
@@ -145,7 +145,7 @@ class Board():
                 possible_y_move = key[1]+j
                 if (possible_x_move,possible_y_move) != key \
                 and possible_x_move in range(self.boardIndex) and possible_y_move in range(self.boardIndex) \
-                and self.board[possible_x_move][possible_y_move] != "e":
+                and self.board[possible_x_move][possible_y_move] != 0:
                     jumps.append((possible_x_move,possible_y_move))
         return jumps
 
@@ -175,7 +175,7 @@ class Board():
                     # break out of for loops when win is false
                     for j in range(0,4):
                         for i in range(4+j,8):
-                            win = self.board[j][i] == "p1"
+                            win = self.board[j][i] == 1
                             if win != True:
                                 break
                         if win != True:
@@ -185,7 +185,7 @@ class Board():
                     # break out of for loops when win is false
                     for j in range(0,5):
                         for i in range(5+j,10):
-                            win = self.board[j][i] == "p1"
+                            win = self.board[j][i] == 1
                             if win != True:
                                 break
                         if win != True:
@@ -195,7 +195,7 @@ class Board():
                     # break out of for loops when win is false
                     for j in range(0,6):
                         for i in range(10+j,16):
-                            win = self.board[j][i] == "p1"
+                            win = self.board[j][i] == 1
                             if win != True:
                                 break
                         if win != True:
@@ -210,7 +210,7 @@ class Board():
                     # break out of for loops when win is false
                     for j in range(0,4):
                         for i in range(4+j,8):
-                            win = self.board[i][j] == "p2"
+                            win = self.board[i][j] == 2
                             if win != True:
                                 break
                         if win != True:
@@ -220,7 +220,7 @@ class Board():
                     # break out of for loops when win is false
                     for j in range(0,5):
                         for i in range(5+j,10):
-                            win = self.board[i][j] == "p2"
+                            win = self.board[i][j] == 2
                             if win != True:
                                 break
                         if win != True:
@@ -230,7 +230,7 @@ class Board():
                     # break out of for loops when win is false
                     for j in range(0,6):
                         for i in range(10+j,16):
-                            win = self.board[i][j] == "p2"
+                            win = self.board[i][j] == 2
                             if win != True:
                                 break
                         if win != True:

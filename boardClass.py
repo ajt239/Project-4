@@ -1,17 +1,19 @@
 from tkinter import *
 from Board import Board
+from AI import *
 import time
 
 class BoardGUI(Frame):
 
     
-    def __init__(self, boardLength, boardFile = None, master =None):
+    def __init__(self, boardLength, boardFile = None, master = None):
         # check the the board size is correct for Halma
         if boardLength not in [8, 10, 16]:
             quit()
 
         self.board = Board(boardLength,boardFile)     # this array holds what the actual GUI is modeled after
         self.boardIndex = self.board.getSize() # makes variable to find board size accessible
+        self.buttonText = ["    ", "p1", "p2"]
         
         # if there is a file, fill self.board with the file's information
         if boardFile != None:
@@ -54,15 +56,7 @@ class BoardGUI(Frame):
             for y in range(self.boardIndex):
                 # check if the space is "e"
                 # and if it is not, set the button text to what is in self.board
-                if self.board.getPosition(x,y) != "e":
-                    self.boardButtons[x].append(Button(text = self.board.getPosition(x,y),
-                                                    command = lambda x=x, y=y: self.press(x,y)))
-                # if it is, set the text to five empty spaces, which keeps it the same size as the others  
-                else:
-                    self.boardButtons[x].append(Button(text = "     ",
-                                                    command = lambda x=x, y=y: self.press(x,y)))
-                
-                # these buttons are not actually meant to be pressed on; so don't give the user the option
+                self.boardButtons[x].append(Button(text = self.buttonText[self.board.getPosition(x,y)],command = lambda x=x, y=y: self.press(x,y)))
                 self.boardButtons[x][y]["state"] = DISABLED
 
                 if (x+y) % 2 == 0:
@@ -149,15 +143,15 @@ class BoardGUI(Frame):
     def press(self,x,y):
         # changes self.board[x][y] to whatever it should be after being pressed
         # and self.lbl to show what has happened
-        if self.board.getPosition(x,y) == "e":
+        if self.board.getPosition(x,y) == 0:
             if self.board.getGameState() == 0:
-                self.board.setPosition(x,y,"p1")
+                self.board.setPosition(x,y,1)
                 self.boardButtons[x][y]["text"] = "p1"
             else:
-                self.board.setPosition(x,y,"p2")
+                self.board.setPosition(x,y,2)
                 self.boardButtons[x][y]["text"] = "p2"
         else:
-           self.board.setPosition(x,y,"e")
+           self.board.setPosition(x,y,0)
            self.boardButtons[x][y]["text"] = "     "
 
         # highlight the pressed button
