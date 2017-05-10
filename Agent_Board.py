@@ -10,12 +10,22 @@ class Agent_Board:
         self.rows = len(board)
         self.board_tiles = self.get_board_tiles()
         self.player = player
-        self.pawn_positions = self.get_pawn_positions()
+        self.pawn_positions = self.get_pawn_positions(self.player)
         self.jump_path = set()
 
-        #self.scores = {(0,7): 100, (0,6): 100, (0,5): 100, (0,4): 100, (1,7): 100, (1,6): 100, (1,5): 100, ()}
+        self.scores = {(0,7): 400, (0,6): 300, (0,5): 200, (0,4): 100, (1,7): 300, (1,6): 200, (1,5): 100, (2,7): 300, (2,6): 200, (3,7): 100, # 10
+                       (0,3): 75, (1,4): 75, (2,5): 75, (3,6): 75, (4,7): 75,                                                                   # 5
+                       (1,3): 50, (2,4): 50, (3,5): 50, (4,6): 50,                                                                              # 4
+                       (0,2): 25, (1,2): 25, (2,3): 25, (3,4): 25, (4,5): 25, (5,6): 25, (5,7): 25,                                             # 7
+                       (1,1): 0, (2,2): 0, (3,3): 0, (4,4): 0, (5,5): 0, (6,6): 0,                                                              # 6
+                       (2,1): -25, (3,2): -25, (4,3): -25, (5,4): -25, (6,5): -25,                                                              # 5
+                       (0,1): -50, (6,7): -50, (2,0): -50, (7,5): -50, (3,1): -50, (4,2): -50, (5,3): -50, (6,4): -50,                          # 8
+                       (3,0): -75, (4,1): -75, (5,2): -75, (6,3): -75, (7,4): -75,                                                              # 5
+                       (1,0): -100, (7,6): -100, (4,0): -100, (5,0): -100, (6,0): -100, (7,0): -100, (5,1): -100, (6,1): -100, (7,1): -100, (6,2): -100, (7,2): -100, (7,3): -100, # 12
+                       (0,0): -200, (7,7): -200} # 2
+                                                 # total = 64!
 
-    def get_pawn_positions(self):
+    def get_pawn_positions(self, player):
         """
         
         :return: 
@@ -23,7 +33,7 @@ class Agent_Board:
         pawns = set()
         for row in range(self.rows):
             for column in range(self.columns):
-                if self.board[row][column] == self.player:
+                if self.board[row][column] == player:
                     pawns.add((column,row))
         return pawns
 
@@ -199,6 +209,8 @@ class Agent_Board:
         return win
 
     def utility(self):
+        """"""
+        """
         value = 0
         goodPawns = self.pawns_in_goal()
         badPawns = self.pawns_in_base()
@@ -214,7 +226,23 @@ class Agent_Board:
             # mildPawns = 21-(goodPawns+badPawns)
             value = (goodPawns + mildPawns - badPawns) / 21
 
+        """
+        value = 0
+        
+        for pawn in self.pawn_positions:
+            value += self.scores[pawn]
+
+        """
+        if self.player == 1:
+            opponent = self.get_pawn_positions(2)
+        else:
+            opponent = self.get_pawn_positions(1)
+
+        for pawn in opponent:
+            value += self.scores[pawn]
+        """
         return value
+
 
     def pawns_in_goal(self):
         pawnsInGoal = 0
@@ -377,3 +405,4 @@ class Agent_Board:
                         value += 1 / 4
 
         return value
+

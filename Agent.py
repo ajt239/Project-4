@@ -1,4 +1,4 @@
-from Board import Board
+from Agent_Board import Agent_Board
 import math
 
 infinity = math.inf
@@ -8,6 +8,7 @@ class Agent:
     def __init__(self):
         self.player_1 = 1
         self.player_2 = 2
+        self.moves_found = 0
 
     def minimax_decision(self, state):
         depth = 0
@@ -16,7 +17,8 @@ class Agent:
         moves = state.move_generator()
 
         for move in moves:
-            board = Board(move, depth+1, self.player_1)
+            self.moves_found += 1
+            board = Agent_Board(move, depth+1, self.player_2)
 
             val = self.min_value(board, depth+1, -infinity, infinity)
 
@@ -24,7 +26,9 @@ class Agent:
                 v = val
                 best_move = board
 
-        return v, best_move
+        print("Heuristic value: " + str(v))
+        print("Moves found: " + str(self.moves_found))
+        return v, best_move.board
 
     def max_value(self, state, depth, alpha, beta):
         """
@@ -41,7 +45,8 @@ class Agent:
         moves = state.move_generator()
 
         for move in moves:
-            board = Board(move, depth+1, self.player_2)
+            self.moves_found += 1
+            board = Agent_Board(move, depth+1, self.player_1)
             v = max(v, self.min_value(board, depth+1, alpha, beta))
 
             if v >= beta:
@@ -67,7 +72,8 @@ class Agent:
         moves = state.move_generator()
 
         for move in moves:
-            board = Board(move, depth+1, self.player_1)
+            self.moves_found += 1
+            board = Agent_Board(move, depth+1, self.player_2)
             v = min(v, self.max_value(board, depth+1, alpha, beta))
 
             if v <=alpha:
