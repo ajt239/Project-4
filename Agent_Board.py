@@ -6,12 +6,14 @@ class Agent_Board:
     def __init__(self, board, depth, player):
         self.board = board
         self.depth = depth
-        self.x_dimension = len(self.board[0])
-        self.y_dimension = len(board)
+        self.columns = len(self.board[0])
+        self.rows = len(board)
         self.board_tiles = self.get_board_tiles()
         self.player = player
         self.pawn_positions = self.get_pawn_positions()
         self.jump_path = set()
+
+        #self.scores = {(0,7): 100, (0,6): 100, (0,5): 100, (0,4): 100, (1,7): 100, (1,6): 100, (1,5): 100, ()}
 
     def get_pawn_positions(self):
         """
@@ -19,8 +21,8 @@ class Agent_Board:
         :return: 
         """
         pawns = set()
-        for row in range(self.y_dimension):
-            for column in range(self.x_dimension):
+        for row in range(self.rows):
+            for column in range(self.columns):
                 if self.board[row][column] == self.player:
                     pawns.add((column,row))
         return pawns
@@ -151,8 +153,8 @@ class Agent_Board:
         :return: 
         """
         board_set = set([])
-        for x in range(self.y_dimension):
-            for y in range(self.x_dimension):
+        for x in range(self.rows):
+            for y in range(self.columns):
                 board_set.add((x, y))
         return board_set
 
@@ -165,7 +167,7 @@ class Agent_Board:
 
     def cutoff_test(self):
 
-        if self.depth == 5 or self.terminal_test():
+        if self.depth == 4 or self.terminal_test():
             return True
         else:
             return False
@@ -200,60 +202,178 @@ class Agent_Board:
         value = 0
         goodPawns = self.pawns_in_goal()
         badPawns = self.pawns_in_base()
-        # mildPawns = pawns_in_middle(board)
-        if self.y_dimension == 8:
-            mildPawns = 10 - (goodPawns + badPawns)
-            value = (goodPawns + mildPawns / 2 - badPawns) / 10
-        elif self.y_dimension == 10:
-            mildPawns = 15 - (goodPawns + badPawns)
-            value = (goodPawns + mildPawns / 2 - badPawns) / 15
+        mildPawns = self.pawns_in_middle()
+
+        if self.rows == 8:
+            # mildPawns = 10-(goodPawns+badPawns)
+            value = (goodPawns + mildPawns - badPawns) / 10
+        elif self.rows == 10:
+            # mildPawns = 15-(goodPawns+badPawns)
+            value = (goodPawns + mildPawns - badPawns) / 15
         else:
-            mildPawns = 21 - (goodPawns + badPawns)
-            value = (goodPawns + mildPawns / 2 - badPawns) / 21
+            # mildPawns = 21-(goodPawns+badPawns)
+            value = (goodPawns + mildPawns - badPawns) / 21
 
         return value
 
     def pawns_in_goal(self):
-        pawns = 0
-        if self.y_dimension == 8:
-            # add 10 players to each side
-            for x in range(0, 4):
-                for y in range(4 + x, 8):
-                    if self.board[x][y] == 1:
-                        pawns += 1
-
+        pawnsInGoal = 0
+        if self.player == 1:
+            for pawn in self.pawn_positions:
+                x = pawn[1]
+                y = pawn[0]
+                if self.rows == 8:
+                    # add 10 players to each side
+                    if x in range(0, 4):
+                        if y in range(4 + x, 8):
+                            pawnsInGoal += 1
+                elif self.rows == 10:
+                    # add 15 players to each side
+                    if x in range(0, 5):
+                        if y in range(5 + x, 10):
+                            pawnsInGoal += 1
+                else:
+                    # add 21 players to each side
+                    for x in range(0, 6):
+                        for y in range(10 + x, 16):
+                            pawnsInGoal += 1
         else:
-            # add 21 players to each side
-            for x in range(0, 6):
-                for y in range(10 + x, 16):
-                    if self.board[x][y] == 1:
-                        pawns += 1
-        return pawns
+            for pawn in self.pawn_positions:
+                x = pawn[0]
+                y = pawn[1]
+                if self.rows == 8:
+                    # add 10 players to each side
+                    if x in range(0, 4):
+                        if y in range(4 + x, 8):
+                            pawnsInGoal += 1
+                elif self.rows == 10:
+                    # add 15 players to each side
+                    if x in range(0, 5):
+                        if y in range(5 + x, 10):
+                            pawnsInGoal += 1
+                else:
+                    # add 21 players to each side
+                    for x in range(0, 6):
+                        for y in range(10 + x, 16):
+                            pawnsInGoal += 1
+        return pawnsInGoal
 
     def pawns_in_base(self):
         weight = 0
-        if self.y_dimension == 8:
-            # add 10 players to each side
-            for x in range(0, 4):
-                for y in range(4 + x, 8):
-                    if self.board[y][x] == 1:
-                        weight += 1
-        elif self.y_dimension == 10:
-            # add 15 players to each side
-            for x in range(0, 5):
-                for y in range(5 + x, 10):
-                    if self.board[y][x] == 1:
-                        weight -= 1
+        if self.player == 1:
+            for pawn in self.pawn_positions:
+                x = pawn[0]
+                y = pawn[1]
+                if self.rows == 8:
+                    # check 10 players to each side
+                    if x in range(0, 4):
+                        if y in range(4 + x, 8):
+                            weight += 1
+                elif self.rows == 10:
+                    # check 15 players to each side
+                    if x in range(0, 5):
+                        if y in range(5 + x, 10):
+                            weight += 1
+                else:
+                    # check 21 players to each side
+                    if x in range(0, 6):
+                        if y in range(10 + x, 16):
+                            weight += 1
         else:
-            # add 21 players to each side
-            for x in range(0, 6):
-                for y in range(10 + x, 16):
-                    if self.board[y][x] == 1:
-                        weight -= 1
+            for pawn in self.pawn_positions:
+                x = pawn[1]
+                y = pawn[0]
+                if self.rows == 8:
+                    # check 10 players to each side
+                    if x in range(0, 4):
+                        if y in range(4 + x, 8):
+                            weight += 1
+                elif self.rows == 10:
+                    # check 15 players to each side
+                    if x in range(0, 5):
+                        if y in range(5 + x, 10):
+                            weight += 1
+                else:
+                    # check 21 players to each side
+                    if x in range(0, 6):
+                        if y in range(10 + x, 16):
+                            weight += 1
+
         return weight
 
     def pawns_in_middle(self):
+        # Made for 8 by 8 only and checks only for player 1
         value = 0
-        for x in range(2, self.y_dimension - 2):
-            for y in range(2, self.y_dimension - 2):
-                pass
+
+        # for x in range(3,rows-3):
+        #     if board[x][x-3] == 1:
+        #         value += 1/8
+        #     else board[x-3][x] == 1:
+        #         value +=7/8
+
+        if self.player == 1:
+            for pawn in self.pawn_positions:
+                x = pawn[1]
+                y = pawn[0]
+                if pawn == (1, 4) or pawn == (6, 3):
+                    value += 2 / 4
+
+                elif pawn == (4, 1) or pawn == (3, 6):
+                    value += 3 / 4
+
+                elif x in range(2):
+                    if y in range(2):
+                        value += 1 / 20
+                    elif y in range(4):
+                        value += 1 / 4
+
+                elif x in range(2, self.rows - 2):
+                    if y in range(2) and x < 4:
+                        value += 1 / 4
+                    elif y in range(2, self.columns - 2):
+                        if y >= x:
+                            value += 3 / 4
+                        else:
+                            value += 2 / 4
+                    else:
+                        value += 1 / 4
+
+                elif x in range(self.rows - 2, self.rows):
+                    if y in range(self.rows - 2, self.rows):
+                        value += 1 / 20
+                    elif y in range(4, 6):
+                        value += 1 / 4
+        else:
+            for pawn in self.pawn_positions:
+                x = pawn[1]
+                y = pawn[0]
+                if pawn == (1, 4) or pawn == (6, 3):
+                    value += 3 / 4
+
+                elif pawn == (4, 1) or pawn == (3, 6):
+                    value += 2 / 4
+
+                elif x in range(2):
+                    if y in range(2):
+                        value += 1 / 20
+                    elif y in range(4):
+                        value += 1 / 4
+
+                elif x in range(2, self.rows - 2):
+                    if y in range(2) and x < 4:
+                        value += 1 / 4
+                    elif y in range(2, self.columns - 2):
+                        if y >= x:
+                            value += 2 / 4
+                        else:
+                            value += 3 / 4
+                    else:
+                        value += 1 / 4
+
+                elif x in range(self.rows - 2, self.rows):
+                    if y in range(self.rows - 2, self.rows):
+                        value += 1 / 20
+                    elif y in range(4, 6):
+                        value += 1 / 4
+
+        return value
